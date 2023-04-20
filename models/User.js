@@ -5,8 +5,7 @@ const userSchema= new Schema({
 
     name:{
         type:String ,
-        required: [true, 'Name must be required'],
-
+        required: [true, 'Name must be required?'],
     },    
     email:{
         type: String,
@@ -22,17 +21,14 @@ const userSchema= new Schema({
     phone:{
         type:String,
         required:  [true, 'Phone must be required'],
-        minLength: [10, "no should have minimum 10 digits"],
-        maxLength: [10, "no should have maximum 10 digits"],
-        match: [/\d{10}/, "no should only have digits"]  
-    },
-        
+        minLength: [10, "Phone should  have minimum 10 digits"],
+        maxLength: [10, "Phone should  have maximum 10 digits"],
+       match: [/\d{10}/, "Phone should  only have digits"]  
+    }, 
     password:{
-        type:String,
-        required:  [true, 'Password must be required'],
-        minLength: [6, "no should have minimum 6 digits"],
-        
-    },
+        type:String ,
+        required: [true, 'Password must be required?'],
+    }, 
 },{timestamps:true});
   
 const User = mongoose.model('User',userSchema);

@@ -6,7 +6,7 @@ const authenticateJWT = (req, res, next) => {
     res.status(401).json({ success : false , error:"Unauthorized" })
   }
   const token = bearerToken.split(' ')[1];
-  jwt.verify(token,config.get("ACCESS_TOKEN_SECRET"), (err, user) => {
+  jwt.verify(token,process.env.ACCESS_TOKEN_SECRET, (err, user) => {
     if (err) {
       res.status(403).json({ success : false , error:"Forbidden" })
 
@@ -14,6 +14,7 @@ const authenticateJWT = (req, res, next) => {
     req.user = user;
     next();
   });
+
 };
 
 

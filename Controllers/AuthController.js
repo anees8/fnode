@@ -5,9 +5,9 @@ const jwt = require('jsonwebtoken');
 
 const register = async (req,res,next)=> {
 
+    const { name,email,phone,password } = req.body;
     try {
-        const { name,email,phone,password } = req.body;
-
+     
     const hashedPwd = await bcrypt.hash(password, 10); 
     let user=new User({
     name,
@@ -16,25 +16,25 @@ const register = async (req,res,next)=> {
     password:hashedPwd,
     }); 
     const data = await user.save();
-    res.status(200).json({ success : true , message: 'User registered successfully' , data  })
+    return res.status(200).json({ success : true , message: 'User registered successfully' , data  })
     } catch (error) {
-    res.status(400).json({ success : false , error })
+        return  res.status(400).json({ success : false , error })
     }
 
 }
 
 const login = async (req,res,next)=>{
+    const { email, password } = req.body;
+       
         try {
             
-            const { email, password } = req.body;
-
             const user = await User.findOne({email});
             if (user) {
                 const matches = await bcrypt.compare(password, user.password);
                 if (matches) {
-                
-                    const token = jwt.sign({ userId: user._id },config.get("ACCESS_TOKEN_SECRET"), { expiresIn:config.get("ACCESS_TOKEN_EXPIRE_TIME")});
-                    res.status(200).json({ success : true , token })
+
+                    const token = jwt.sign({ userId: user._id },process.env.ACCESS_TOKEN_SECRET, { expiresIn:process.env.ACCESS_TOKEN_EXPIRE_TIME});
+                    res.status(200).json({ success : true ,message: 'User Login successfully', token })
                   } else {
                     return res.status(401).json({success : false, error: 'Invalid email or password' });
                   }
@@ -44,7 +44,7 @@ const login = async (req,res,next)=>{
             
            
         } catch (error) {
-        res.status(400).json({ success : false , error })
+            return  res.status(400).json({ success : false , error })
         }
 
 }

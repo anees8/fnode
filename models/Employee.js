@@ -10,7 +10,7 @@ const employeeSchema= new Schema({
     },
     designation:{
         type:String, 
-        required: [true, 'Description must be required'],
+        required: [true, 'Designation must be required'],
     },
     
     email:{
