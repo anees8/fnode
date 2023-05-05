@@ -18,7 +18,10 @@ const userSchema= new Schema({
             'Please Enter Valid Email Address'
           ]
     },
-    
+
+    token:{
+        type:String,
+    },    
     phone:{
         type:String,
         required:  [true, 'Phone must be required'],

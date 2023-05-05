@@ -5,9 +5,9 @@ const index = async (req,res,next)=> {
 
     try {
     const data = await Employee.find();
-    res.status(200).json({ success : true , count : data.length  , data  })
+   return res.status(200).json({ success : true , count : data.length  , data  })
     } catch (error) {
-    res.status(400).json({ success : false , error })
+        return res.status(400).json({ success : false , error })
     }
 
 }
@@ -19,11 +19,11 @@ const show = async (req,res,next)=>{
     const data = await Employee.findById(employeeID);
 
         if(!data){
-        res.status(404).json({ success:false , error : 'Employee Not Found'})
+            return   res.status(404).json({ success:false , error : 'Employee Not Found'})
         }
-    res.status(200).json({ success : true , data  })
+        return   res.status(200).json({ success : true , data  })
     } catch (error) {
-    res.status(400).json({ success : false , error })
+        return   res.status(400).json({ success : false , error })
     }
 }
 
@@ -39,9 +39,9 @@ const store = async (req,res,next)=>{
     age:req.body.age,
     }); 
     const data = await employee.save();
-    res.status(201).json({ success : true , data  })
+    return  res.status(201).json({ success : true , data  })
     } catch (error) {
-    res.status(400).json({ success : false , error })
+        return   res.status(400).json({ success : false , error })
     }
   
 }
@@ -59,9 +59,9 @@ const update = async (req,res,next)=>{
     age:req.body.age,
     }; 
     const data = await Employee.findByIdAndUpdate(employeeID,{$set:updateData});
-    res.status(200).json({ success : true , data  })
+    return  res.status(200).json({ success : true , data  })
     } catch (error) {
-    res.status(400).json({ success : false , error })
+        return  res.status(400).json({ success : false , error })
     }
 
 }
@@ -72,9 +72,9 @@ const destroy = async(req,res,next)=>{
     try {    
     let employeeID = req.params.employeeID;
     const data = await Employee.findOneAndRemove(employeeID);
-    res.status(201).json({ success : true , data  })
+    return res.status(201).json({ success : true , data  })
     } catch (error) {
-    res.status(400).json({ success : false , error })
+        return  res.status(400).json({ success : false , error })
     }
 }
 

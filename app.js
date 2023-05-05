@@ -8,7 +8,8 @@ const EmployeeRoute = require('./routes/employee');
 const AuthRoute = require('./routes/auth');
 
 
-mongoose.connect( `mongodb://${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
+
+mongoose.connect( `mongodb+srv://meeranjianees1:Anees%4084@anees.r0egejs.mongodb.net/${process.env.DB_NAME}`);
 const db=mongoose.connection;
 db.on('error',(err)=>{
 console.log(err);
