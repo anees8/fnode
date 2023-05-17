@@ -1,9 +1,7 @@
 const User = require("../models/User");
-const UserProfile= require("../models/UserProfile");
-const path = require('path');
-const fs = require('fs');
-
-
+const UserProfile = require("../models/UserProfile");
+const path = require("path");
+const fs = require("fs");
 
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -101,20 +99,16 @@ const forgetPassword = async (req, res, next) => {
         }
       });
 
-      return res
-        .status(200)
-        .json({
-          success: true,
-          message: "The token has been successfully sent to your email address",
-          data
-        });
+      return res.status(200).json({
+        success: true,
+        message: "The token has been successfully sent to your email address",
+        data
+      });
     } else {
-      return res
-        .status(401)
-        .json({
-          success: false,
-          error: "Please provide a valid email address"
-        });
+      return res.status(401).json({
+        success: false,
+        error: "Please provide a valid email address"
+      });
     }
   } catch (error) {
     return res.status(400).json({ success: false, error });
@@ -147,81 +141,83 @@ const ResetPassword = async (req, res, next) => {
 };
 
 const usersprofile = async (req, res, next) => {
-
-  let  userProfile ;
+  let userProfile;
   let file;
   let filename;
-  const {phone,user_id } = req.body;
+  const { phone, user_id } = req.body;
 
   if (req.files && req.files.profileImage) {
-     file = req.files.profileImage;   
-     filename= 'uploads/'+file.name; 
+    file = req.files.profileImage;
+    filename = "uploads/" + file.name;
   }
- 
- 
+
   try {
+    const userprofileexists = await UserProfile.findOne({ user_id });
 
- const userprofileexists=await UserProfile.findOne({ user_id });
-
-
-          
-  if(userprofileexists){
-    
-      if(file){
-      if (fs.existsSync(`public/${userprofileexists.profileImage}`)) {
-      // If it does, remove it from the location
-      fs.unlinkSync(`public/${userprofileexists.profileImage}`);
-      }
+    if (userprofileexists) {
+      if (file) {
+        if (fs.existsSync(`public/${userprofileexists.profileImage}`)) {
+          // If it does, remove it from the location
+          fs.unlinkSync(`public/${userprofileexists.profileImage}`);
+        }
       }
 
-  
-    await UserProfile.findOneAndUpdate(
-    { user_id },
-    { $set: { phone,profileImage: filename} }
-    
-   );
+      await UserProfile.findOneAndUpdate(
+        { user_id },
+        { $set: { phone, profileImage: filename } }
+      );
 
-   userProfile= await UserProfile.findOne({ user_id });
+      userProfile = await UserProfile.findOne({ user_id }).populate("user_id", [
+        "name",
+        "email"
+      ]);
+    } else {
+      if (!req.files || Object.keys(req.files).length === 0) {
+        return res
+          .status(400)
+          .json({ success: false, error: "No files were uploaded." });
+      }
 
-
-  }else{
-
-  if (!req.files || Object.keys(req.files).length === 0) {
-    return res.status(400).json({success: false, error:'No files were uploaded.'});
-  }
-
-
-   userProfile = await UserProfile.create({
-  phone,
-  user_id,
-  profileImage:filename
-
-  });
-
-
-  }
-
-  if(file){
-  file.mv('public/uploads/'+file.name, (err) => {
-    if (err){
-    return res.status(500).send(err);
+      userProfile = await UserProfile.create({
+        phone,
+        user_id,
+        profileImage: filename
+      });
     }
 
-    });
-  }
+    if (file) {
+      file.mv("public/uploads/" + file.name, (err) => {
+        if (err) {
+          return res.status(500).send(err);
+        }
+      });
+    }
 
-
-
-
-  return res
-  .status(200)
-  .json({ success: true, message: "User Profile Updated successfully" ,userProfile });
-
-
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "User Profile Updated successfully",
+        userProfile
+      });
   } catch (error) {
-  return res.status(400).json({ success: false, error });
+    return res.status(400).json({ success: false, error });
   }
-  };
+};
 
+const logout = async (req, res, next) => {
+  try {
+      const token = req.headers.authorization.split(' ')[1]; 
+    return res.json({ success: true, message: 'Logout successful' });
+  } catch (error) {
+    return res.status(400).json({ success: false, error });
+  }
+};
 
-module.exports = { register, login, forgetPassword, ResetPassword ,usersprofile};
+module.exports = {
+  register,
+  login,logout,
+  forgetPassword,
+  ResetPassword,
+  usersprofile
+};

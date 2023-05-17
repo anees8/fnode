@@ -8,6 +8,7 @@ const authenticateJWT  = require('../middleware/auth');
 
 router.post('/register',AuthController.register);
 router.post('/login',AuthController.login);
+router.post('/logout',AuthController.logout);
 router.post('/forgetPassword',AuthController.forgetPassword);
 router.post('/resetPassword',AuthController.ResetPassword)
 router.post('/updateUserProfile',authenticateJWT,AuthController.usersprofile)
