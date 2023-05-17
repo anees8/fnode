@@ -18,7 +18,10 @@ const userSchema= new Schema({
             'Please Enter Valid Email Address'
           ]
     },
-
+    role: {
+        type: String,
+        default: 'user',
+      },
     token:{
         type:String,
     },    
