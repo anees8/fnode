@@ -2,8 +2,11 @@ const express = require('express');
 const fileUpload = require('express-fileupload'); 
 const mongoose = require('mongoose');
 const morgan = require('morgan');
+const cors = require('cors');
 require('dotenv').config();
 const app = express();
+app.use(cors({ origin: 'http://localhost:5173' }));
+
 const port = process.env.PORT || 3000; // You can use any valid port number here
 
 app.use(express.urlencoded({

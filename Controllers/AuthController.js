@@ -8,9 +8,10 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 
 const register = async (req, res, next) => {
-  try {
-    const { name, email, phone, password } = req.body;
+  const { name, email, phone, password } = req.body;
 
+  try {
+    
     const hashedPwd = await bcrypt.hash(password, 10);
     let user = new User({
       name,
@@ -45,12 +46,12 @@ const login = async (req, res, next) => {
         return res.status(200).json({ success: true, token });
       } else {
         return res
-          .status(401)
+          .status(400)
           .json({ success: false, error: "Invalid email or password" });
       }
     } else {
       return res
-        .status(401)
+        .status(400)
         .json({ success: false, error: "Invalid email or password" });
     }
   } catch (error) {
@@ -105,7 +106,7 @@ const forgetPassword = async (req, res, next) => {
         data
       });
     } else {
-      return res.status(401).json({
+      return res.status(400).json({
         success: false,
         error: "Please provide a valid email address"
       });
