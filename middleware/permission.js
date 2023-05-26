@@ -5,15 +5,16 @@ const jwt = require('jsonwebtoken');
 
 
 const permission = (requiredPermission) => {
-  return (req, res, next) => {
+  
+   return (req, res, next) => {
 
     const bearerToken = req.header('Authorization');
     const token = bearerToken.split(' ')[1];
 
     // Assuming you have the JWT token stored in a variable called 'token'
     const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-
-    const { role } = decodedToken;
+  
+    const { role } = decodedToken.user;
 
 
     if (role && roles[role]) {
@@ -28,7 +29,7 @@ const permission = (requiredPermission) => {
       // User role not found or invalid
       res.status(401).json({ error: 'Unauthorized1' });
     }
-  };
+   };
 };
 
 

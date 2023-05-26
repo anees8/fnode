@@ -9,10 +9,13 @@ const permission = require('../middleware/permission');
 router.post('/register',AuthController.register);
 router.post('/login',AuthController.login);
 router.post('/logout',AuthController.logout);
-router.post('/forgetPassword',permission('user_pw_update'),AuthController.forgetPassword);
-router.post('/resetPassword',permission('user_pw_update'),AuthController.ResetPassword)
+router.post('/forgetPassword',AuthController.forgetPassword);
+router.post('/resetPassword',AuthController.ResetPassword)
 router.post('/updateUserProfile',[authenticateJWT,permission('user_update')],AuthController.usersprofile)
-
+router.get('/users',[authenticateJWT,permission('users_read')],AuthController.getusers)
+router.delete('/users/:userId',[authenticateJWT],AuthController.deleteUser)
+router.get('/users/:userId',[authenticateJWT],AuthController.getuser)
+router.put('/users/:userId',[authenticateJWT,permission('user_update')],AuthController.updateuser)
 
 
 module.exports=router;

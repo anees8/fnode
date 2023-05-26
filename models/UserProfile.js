@@ -8,7 +8,6 @@ const UserProfileSchema = new Schema(
         ref: 'User',
         required:true
               },
-       
     phone: { type: String ,required:true,},
     profileImage: { type: String },
     address: {
@@ -20,6 +19,8 @@ const UserProfileSchema = new Schema(
   },
   { timestamps: true }
 );
+
+
 
 const UserProfile = mongoose.model("UserProfile", UserProfileSchema);
 module.exports = UserProfile;

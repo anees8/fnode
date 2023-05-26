@@ -2,7 +2,6 @@ const User = require("../models/User");
 const UserProfile = require("../models/UserProfile");
 const path = require("path");
 const fs = require("fs");
-
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
@@ -12,19 +11,33 @@ const register = async (req, res, next) => {
 
   try {
     
-    const hashedPwd = await bcrypt.hash(password, 10);
+  
     let user = new User({
       name,
       email,
       phone,
-      password: hashedPwd
+      password
     });
     const data = await user.save();
     return res
       .status(200)
       .json({ success: true, message: "User registered successfully", data });
-  } catch (error) {
-    return res.status(400).json({ success: false, error });
+  } catch (err) {
+   
+     let error={};
+    if (typeof err === 'object' && err instanceof Error) {
+      if(err.code === 11000){
+
+        error={"email":"The email is already taken"};
+      }else{
+    Object.keys(err.errors).forEach((key) => {
+      error[key] = err.errors[key].message;
+    });
+  }
+  }else{
+    error=err;
+  }
+    return res.status(400).json({ success: false, error  });
   }
 };
 
@@ -33,11 +46,14 @@ const login = async (req, res, next) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
+   
     if (user) {
-      const matches = await bcrypt.compare(password, user.password);
+      
+      const matches = await bcrypt.compare(password,user.password);
+   
       if (matches) {
         const token = jwt.sign(
-          { userId: user._id,role:user.role },
+          { user: user},  
           process.env.ACCESS_TOKEN_SECRET,
           {
             expiresIn: process.env.ACCESS_TOKEN_EXPIRE_TIME
@@ -121,10 +137,10 @@ const ResetPassword = async (req, res, next) => {
   try {
     const user = await User.findOne({ email, token });
     if (user) {
-      const hashedPwd = await bcrypt.hash(password, 10);
+      
 
       let updateData = {
-        password: hashedPwd,
+        password,
         token: ""
       };
       const data = await User.findByIdAndUpdate(user._id, { $set: updateData });
@@ -145,7 +161,8 @@ const usersprofile = async (req, res, next) => {
   let userProfile;
   let file;
   let filename;
-  const { phone, user_id } = req.body;
+  const {phone} = req.body;
+  const {_id}  = jwt.verify(req.header('Authorization').split(' ')[1], process.env.ACCESS_TOKEN_SECRET).user;
 
   if (req.files && req.files.profileImage) {
     file = req.files.profileImage;
@@ -153,8 +170,8 @@ const usersprofile = async (req, res, next) => {
   }
 
   try {
-    const userprofileexists = await UserProfile.findOne({ user_id });
-
+    const userprofileexists = await UserProfile.findOne({'user_id':_id});
+   
     if (userprofileexists) {
       if (file) {
         if (fs.existsSync(`public/${userprofileexists.profileImage}`)) {
@@ -164,14 +181,17 @@ const usersprofile = async (req, res, next) => {
       }
 
       await UserProfile.findOneAndUpdate(
-        { user_id },
+        {'user_id':_id},
         { $set: { phone, profileImage: filename } }
       );
+    
 
-      userProfile = await UserProfile.findOne({ user_id }).populate("user_id", [
+      userProfile = await UserProfile.findOne({'user_id':_id}).populate("user_id", [
         "name",
         "email"
       ]);
+
+      
     } else {
       if (!req.files || Object.keys(req.files).length === 0) {
         return res
@@ -181,9 +201,14 @@ const usersprofile = async (req, res, next) => {
 
       userProfile = await UserProfile.create({
         phone,
-        user_id,
+      'user_id':_id,
         profileImage: filename
       });
+
+   
+
+
+
     }
 
     if (file) {
@@ -193,6 +218,9 @@ const usersprofile = async (req, res, next) => {
         }
       });
     }
+
+    const user = await User.findByIdAndUpdate(_id,{$set:{"profile":userProfile._id}});
+
 
     return res
       .status(200)
@@ -214,11 +242,84 @@ const logout = async (req, res, next) => {
     return res.status(400).json({ success: false, error });
   }
 };
+const getusers = async(req,res,next)=>{
+      try {
+
+            const page = parseInt(req.query.page) || 1; // Get the requested page number from the query parameter
+            const limit =  parseInt(req.query.limit) || 5; // Set the number of items per page
+            const skip = (page - 1) * limit; // Calculate the number of items to skip
+            const count = await User.countDocuments();
+            const totalPages = Math.ceil(count / limit);
+
+            const users = await User.find().skip(skip).limit(limit).populate('profile',[
+              "profileImage",
+              "phone"
+            ]);
+
+            return res.json({ success: true, message: 'Users Return Successfully',users,totalPages,
+            currentPage: page,
+            limit: limit,
+            totalRow: count});
+
+      }catch (error) {
+       
+      return res.status(400).json({ success: false, error });
+      }
+}
+
+const deleteUser = async(req,res,next)=>{
+      try {    
+      let userId=req.params.userId;    
+      const users = await User.findByIdAndDelete(userId);
+  
+      return res.json({ success: true, message: 'User Delete Successfully'});
+
+      }catch (error) {
+
+      return res.status(400).json({ success: false, error });
+      }
+}
+
+const getuser = async(req,res,next)=>{
+  try {    
+  let userId=req.params.userId;    
+  const user = await User.findById(userId).populate('profile');
+
+  return res.json({ success: true, message: 'User Delete Successfully',user});
+
+  }catch (error) {
+
+  return res.status(400).json({ success: false, error });
+  }
+}
+const updateuser = async(req,res,next)=>{
+  try {    
+  let userId=req.params.userId;    
+    let updateData ={
+    name:req.body.name
+    }; 
+    const user = await User.findByIdAndUpdate(userId,{$set:updateData});
+
+  return res.json({ success: true, message: 'User Updated Successfully',user});
+
+  }catch (error) {
+
+  return res.status(400).json({ success: false, error });
+  }
+}
+
+
+
 
 module.exports = {
   register,
   login,logout,
   forgetPassword,
   ResetPassword,
-  usersprofile
+  usersprofile,
+  getusers,
+  getuser,
+  deleteUser,
+  updateuser
+
 };
