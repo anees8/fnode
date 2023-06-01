@@ -357,49 +357,6 @@ const updateuser = async(req,res,next)=>{
 }
 
 
-const downloadCSV = async(req,res,next)=>{
-  const csvFilePath = path.join(__dirname, 'users.csv');
-
-  const users = [
-    { name: 'John Doe', age: 30, country: 'USA' },
-    { name: 'Jane Smith', age: 25, country: 'Canada' },
-    // Add more user data here
-  ];
-  
-  // Generate the CSV content
-  const csvContent = users
-    .map(user => Object.values(user).join(','))
-    .join('\n');
-
-  // Write the CSV content to a file
-  fs.writeFile(csvFilePath, csvContent, (err) => {
-    if (err) {
-      console.error('Error writing CSV file:', err);
-    return  res.status(500).send('Internal Server Error');
-    } else {
-      // Set the response headers for CSV download
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', 'attachment; filename=users.csv');
-
-      // Send the CSV file as a response
-      res.sendFile(csvFilePath, (err) => {
-        if (err) {
-          console.error('Error sending CSV:', err);
-          return   res.status(500).send('Internal Server Error');
-        } else {
-          // Delete the temporary CSV file
-          fs.unlink(csvFilePath, (err) => {
-            if (err) {
-              console.error('Error deleting CSV file:', err);
-            }
-          });
-        }
-      });
-    }
-  });
-
-}
-
 
 
 
@@ -413,7 +370,5 @@ module.exports = {
   getusers,
   getuser,
   deleteUser,
-  updateuser,
-  downloadCSV
-
+  updateuser
 };
