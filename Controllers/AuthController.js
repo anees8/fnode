@@ -5,6 +5,8 @@ const fs = require("fs");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+
 
 const register = async (req, res, next) => {
   const { name, email, phone, password } = req.body;
@@ -355,6 +357,55 @@ const updateuser = async(req,res,next)=>{
 }
 
 
+const downloadCSV = async(req,res,next)=>{
+
+   // Your code to fetch data and generate the CSV
+   const users = [
+    { name: 'John Doe', age: 30, country: 'USA' },
+    { name: 'Jane Smith', age: 25, country: 'Canada' },
+    // Add more user data here
+  ];
+
+  // Create a CSV writer
+  const csvWriter = createCsvWriter({
+    path: './public/uploads/users.csv',
+    header: [
+      { id: 'name', title: 'Name' },
+      { id: 'age', title: 'Age' },
+      { id: 'country', title: 'Country' },
+      // Add more headers as needed
+    ],
+  });
+
+  // Write the user data to the CSV file
+  csvWriter.writeRecords(users)
+    .then(() => {
+      // Set the response headers for CSV download
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', 'attachment; filename=users.csv');
+
+      // Send the CSV file as a response
+
+      res.sendFile(path.join(__dirname, 'public', 'uploads', 'users.csv'), (err) => {
+    
+        if (err) {
+          console.error('Error sending CSV:', err);
+          res.status(500).send('Internal Server Error');
+        } else {
+          // Delete the temporary CSV file
+          fs.unlinkSync('public/uploads/users.csv');
+        }
+      });
+    })
+    .catch((error) => {
+      console.error('Error writing CSV:', error);
+      res.status(500).send('Internal Server Error');
+    });
+
+}
+
+
+
 
 
 module.exports = {
@@ -366,6 +417,7 @@ module.exports = {
   getusers,
   getuser,
   deleteUser,
-  updateuser
+  updateuser,
+  downloadCSV
 
 };

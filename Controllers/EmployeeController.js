@@ -78,4 +78,7 @@ const destroy = async(req,res,next)=>{
     }
 }
 
+
+
+
 module.exports = {index, show, update, store, destroy }
