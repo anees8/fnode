@@ -23,20 +23,24 @@ const register = async (req, res, next) => {
       .status(200)
       .json({ success: true, message: "User registered successfully", data });
   } catch (err) {
-   
-     let error={};
-    if (typeof err === 'object' && err instanceof Error) {
+  
+      let error={};
+      if (typeof err === 'object' && err instanceof Error) {
       if(err.code === 11000){
 
-        error={"email":"The email is already taken"};
+      error={"email":"The email is already taken"};
       }else{
-    Object.keys(err.errors).forEach((key) => {
+      Object.keys(err.errors).forEach((key) => {
       error[key] = err.errors[key].message;
-    });
-  }
-  }else{
-    error=err;
-  }
+      });
+      }
+      }else{
+      error=err;
+      }
+
+      return res
+      .status(400)
+      .json({ success: false, message: "Validation Error", error  });
     return res.status(400).json({ success: false, error  });
   }
 };
@@ -243,18 +247,60 @@ const logout = async (req, res, next) => {
   }
 };
 const getusers = async(req,res,next)=>{
-      try {
 
-            const page = parseInt(req.query.page) || 1; // Get the requested page number from the query parameter
-            const limit =  parseInt(req.query.limit) || 5; // Set the number of items per page
+      try { 
+            const search = req.query.search ||""; 
+
+            const namesearch = req.query.namesearch ||""; 
+            const emailsearch = req.query.emailsearch ||""; 
+            const rolesearch = req.query.rolesearch ||""; 
+
+            const count = await User.countDocuments({
+             
+                  $and: [
+                    { name: { $regex: namesearch, $options: 'i' } },
+                    { email: { $regex: emailsearch, $options: 'i' } },
+                    { role: { $regex: rolesearch, $options: 'i' } }
+                  ]
+                },
+                {
+                  $or: [
+                    { name: { $regex: search, $options: 'i' } },
+                    { email: { $regex: search, $options: 'i' } },
+                    { role: { $regex: search, $options: 'i' } }
+                  ]
+              
+            });
+            const page = parseInt(req.query.page) || 0; // Get the requested page number from the query parameter
+            const limit =  parseInt(req.query.limit) || 10; // Set the number of items per page
             const skip = (page - 1) * limit; // Calculate the number of items to skip
-            const count = await User.countDocuments();
             const totalPages = Math.ceil(count / limit);
-
-            const users = await User.find().skip(skip).limit(limit).populate('profile',[
-              "profileImage",
+            const sort = req.query.sort||'createdAt'; 
+       
+            const users = await User.find({
+              $and: [
+                {
+                  $and: [
+                    { name: { $regex: namesearch, $options: 'i' } },
+                    { email: { $regex: emailsearch, $options: 'i' } },
+                    { role: { $regex: rolesearch, $options: 'i' } }
+                  ]
+                },
+                {
+                  $or: [
+                    { name: { $regex: search, $options: 'i' } },
+                    { email: { $regex: search, $options: 'i' } },
+                    { role: { $regex: search, $options: 'i' } }
+                  ]
+                }
+              ]
+            }).skip(skip).limit(limit).sort(sort).populate('profile',[
+              "profileImage", 
               "phone"
             ]);
+
+
+            
 
             return res.json({ success: true, message: 'Users Return Successfully',users,totalPages,
             currentPage: page,
