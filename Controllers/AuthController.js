@@ -5,7 +5,7 @@ const fs = require("fs");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+
 
 
 const register = async (req, res, next) => {
@@ -358,49 +358,45 @@ const updateuser = async(req,res,next)=>{
 
 
 const downloadCSV = async(req,res,next)=>{
+  const csvFilePath = path.join(__dirname, 'users.csv');
 
-   // Your code to fetch data and generate the CSV
-   const users = [
+  const users = [
     { name: 'John Doe', age: 30, country: 'USA' },
     { name: 'Jane Smith', age: 25, country: 'Canada' },
     // Add more user data here
   ];
+  
+  // Generate the CSV content
+  const csvContent = users
+    .map(user => Object.values(user).join(','))
+    .join('\n');
 
-  // Create a CSV writer
-  const csvWriter = createCsvWriter({
-    path: './public/uploads/users.csv',
-    header: [
-      { id: 'name', title: 'Name' },
-      { id: 'age', title: 'Age' },
-      { id: 'country', title: 'Country' },
-      // Add more headers as needed
-    ],
-  });
-
-  // Write the user data to the CSV file
-  csvWriter.writeRecords(users)
-    .then(() => {
+  // Write the CSV content to a file
+  fs.writeFile(csvFilePath, csvContent, (err) => {
+    if (err) {
+      console.error('Error writing CSV file:', err);
+    return  res.status(500).send('Internal Server Error');
+    } else {
       // Set the response headers for CSV download
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', 'attachment; filename=users.csv');
 
       // Send the CSV file as a response
-
-      res.sendFile(path.join(__dirname, 'public', 'uploads', 'users.csv'), (err) => {
-    
+      res.sendFile(csvFilePath, (err) => {
         if (err) {
           console.error('Error sending CSV:', err);
-          res.status(500).send('Internal Server Error');
+          return   res.status(500).send('Internal Server Error');
         } else {
           // Delete the temporary CSV file
-          fs.unlinkSync('public/uploads/users.csv');
+          fs.unlink(csvFilePath, (err) => {
+            if (err) {
+              console.error('Error deleting CSV file:', err);
+            }
+          });
         }
       });
-    })
-    .catch((error) => {
-      console.error('Error writing CSV:', error);
-      res.status(500).send('Internal Server Error');
-    });
+    }
+  });
 
 }
 
