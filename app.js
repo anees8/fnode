@@ -16,8 +16,9 @@ app.use(express.urlencoded({
 app.use(fileUpload());
 app.use(express.static('public'));
 
-const EmployeeRoute = require('./routes/employee');
 const AuthRoute = require('./routes/auth');
+const EmployeeRoute = require('./routes/employee');
+const ProductRoute = require('./routes/product');
 
 
 
@@ -44,6 +45,7 @@ if(app.get('env')=="development"){
 
 app.use('/api',AuthRoute);
 app.use('/api',EmployeeRoute);
+app.use('/api',ProductRoute);
 
 
 // Start the server and listen on a specific port

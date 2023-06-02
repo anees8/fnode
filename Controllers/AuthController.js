@@ -43,7 +43,7 @@ const register = async (req, res, next) => {
       return res
       .status(400)
       .json({ success: false, message: "Validation Error", error  });
-    return res.status(400).json({ success: false, error  });
+    
   }
 };
 
@@ -164,80 +164,78 @@ const ResetPassword = async (req, res, next) => {
 };
 
 const usersprofile = async (req, res, next) => {
-  let userProfile;
-  let file;
-  let filename;
-  const {phone} = req.body;
-  const {_id}  = jwt.verify(req.header('Authorization').split(' ')[1], process.env.ACCESS_TOKEN_SECRET).user;
-
-  if (req.files && req.files.profileImage) {
-    file = req.files.profileImage;
-    filename = "uploads/" + file.name;
-  }
-
-  try {
-    const userprofileexists = await UserProfile.findOne({'user_id':_id});
-   
-    if (userprofileexists) {
-      if (file) {
-        if (fs.existsSync(`public/${userprofileexists.profileImage}`)) {
-          // If it does, remove it from the location
-          fs.unlinkSync(`public/${userprofileexists.profileImage}`);
+        let userProfile;
+        let file;
+        let filename;
+        const {phone} = req.body;
+        const {_id}  = jwt.verify(req.header('Authorization').split(' ')[1], process.env.ACCESS_TOKEN_SECRET).user;
+        try {
+        if (!fs.existsSync("public/usersprofile/")) {
+        fs.mkdirSync("public/usersprofile/", { recursive: true });
         }
-      }
+        
+        if (req.files && req.files.profileImage) {
+        file = req.files.profileImage;
+        filename = "usersprofile/"+Date.now()+ '-' + file.name;
+        }
 
-      await UserProfile.findOneAndUpdate(
+        const userprofileexists = await UserProfile.findOne({'user_id':_id});
+
+
+        if (userprofileexists) {
+        if (file) {        
+        if (fs.existsSync(`public/${userprofileexists.profileImage}`)) {
+        // If it does, remove it from the location
+        fs.unlinkSync(`public/${userprofileexists.profileImage}`);
+        }
+        }
+
+        await UserProfile.findOneAndUpdate(
         {'user_id':_id},
         { $set: { phone, profileImage: filename } }
-      );
-    
+        );
 
-      userProfile = await UserProfile.findOne({'user_id':_id}).populate("user_id", [
+
+        userProfile = await UserProfile.findOne({'user_id':_id}).populate("user_id", [
         "name",
         "email"
-      ]);
+        ]);
 
-      
-    } else {
-      if (!req.files || Object.keys(req.files).length === 0) {
+
+        } else {
+        if (!req.files || Object.keys(req.files).length === 0) {
         return res
-          .status(400)
-          .json({ success: false, error: "No files were uploaded." });
-      }
-
-      userProfile = await UserProfile.create({
-        phone,
-      'user_id':_id,
-        profileImage: filename
-      });
-
-   
-
-
-
-    }
-
-    if (file) {
-      file.mv("public/uploads/" + file.name, (err) => {
-        if (err) {
-          return res.status(500).send(err);
+        .status(400)
+        .json({ success: false, error: "No files were uploaded." });
         }
-      });
-    }
 
-    const user = await User.findByIdAndUpdate(_id,{$set:{"profile":userProfile._id}});
+        userProfile = await UserProfile.create({
+        phone,
+        'user_id':_id,
+        profileImage: filename
+        });
+        }
 
+        if (file) {
+        file.mv(`public/${filename}`, (err) => {
+        if (err) {
+        return res.status(500).send(err);
+        }
+        });
+        }
 
-    return res
-      .status(200)
-      .json({
+        const user = await User.findByIdAndUpdate(_id,{$set:{"profile":userProfile._id}});
+
+        return res
+        .status(200)
+        .json({
         success: true,
         message: "User Profile Updated successfully",
         userProfile
-      });
-  } catch (error) {
-    return res.status(400).json({ success: false, error });
-  }
+        });
+        } catch (error) {
+        return res.status(400).json({ success: false, error });
+        }
 };
 
 const logout = async (req, res, next) => {
@@ -273,7 +271,7 @@ const getusers = async(req,res,next)=>{
                   ]
               
             });
-            const page = parseInt(req.query.page) || 0; // Get the requested page number from the query parameter
+            const page = parseInt(req.query.page) || 1; // Get the requested page number from the query parameter
             const limit =  parseInt(req.query.limit) || 10; // Set the number of items per page
             const skip = (page - 1) * limit; // Calculate the number of items to skip
             const totalPages = Math.ceil(count / limit);
@@ -340,6 +338,7 @@ const getuser = async(req,res,next)=>{
   return res.status(400).json({ success: false, error });
   }
 }
+
 const updateuser = async(req,res,next)=>{
   try {    
   let userId=req.params.userId;    
@@ -357,7 +356,46 @@ const updateuser = async(req,res,next)=>{
 }
 
 
+const multiimageUpload=async(req,res,next)=>{
+  const images = req.files.images;
+  try {    
 
+      if (!req.files || Object.keys(req.files).length === 0) {
+      return res.status(400).send('No files were uploaded.');
+      }
+
+      if (!fs.existsSync("public/products/")) {
+      fs.mkdirSync("public/products/", { recursive: true });
+      }
+
+      if (Array.isArray(images)) {
+      images.forEach((image) => {
+        
+      image.mv("public/products/" + image.name, (err) => {
+        if (err) {
+          return res.status(500).send(err);
+        }
+      });
+      
+      });
+      } else {
+    
+  
+
+      images.mv("public/products/" + images.name, (err) => {
+        if (err) {
+          return res.status(500).send(err);
+        }
+      });
+      }
+      
+return res.json({ success: true, message: 'Files uploaded successfully'});
+
+}catch (error) {
+
+return res.status(400).json({ success: false, error });
+}
+}
 
 
 
@@ -370,5 +408,6 @@ module.exports = {
   getusers,
   getuser,
   deleteUser,
-  updateuser
+  updateuser,
+  multiimageUpload
 };

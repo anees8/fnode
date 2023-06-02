@@ -17,7 +17,7 @@ router.delete('/users/:userId',[authenticateJWT],AuthController.deleteUser)
 router.get('/users/:userId',[authenticateJWT],AuthController.getuser)
 router.put('/users/:userId',[authenticateJWT,permission('user_update')],AuthController.updateuser)
 
-
+router.post('/multiimageUpload',AuthController.multiimageUpload)
 
 
 module.exports=router;
