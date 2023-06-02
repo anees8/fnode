@@ -7,7 +7,7 @@ const productSchema = new mongoose.Schema({
     unique:  [true, 'Product Name Already Exists'],
   },
   price: {
-    type: Number,
+    type: String,
     required: [true, 'Price must be required'],
   },
   description: {
