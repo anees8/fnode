@@ -286,7 +286,7 @@ const update = async(req,res,next)=>{
     
     }
 }
-
+  
 //Get Single  Products
 const show = async (req,res,next)=>{
   let productID=req.params.productID;

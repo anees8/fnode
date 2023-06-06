@@ -357,10 +357,30 @@ const updateuser = async(req,res,next)=>{
 
   return res.json({ success: true, message: 'User Updated Successfully',user});
 
-  }catch (error) {
+  }catch (err) {
+    
+    let error={};
 
-  return res.status(400).json({ success: false, error });
-  }
+    if (typeof err === 'object' && err instanceof Error) {
+    if(err.code === 11000){
+
+    error={"name":"Product Name is already taken"};
+        
+
+    }else{
+    Object.keys(err.errors).forEach((key) => {
+    error[key] = err.errors[key].message;
+    });
+    }
+    }else{
+    error=err;
+    }
+
+    return res
+    .status(400)
+    .json({ success: false, message: "Validation Error", error  });
+    
+    }
 }
 
 
