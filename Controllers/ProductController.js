@@ -3,95 +3,91 @@ const fs = require("fs");
 
 const index = async(req,res,next)=>{
 
-      
-        try {    
-        const search = req.query.search ||""; 
-       
-        const namesearch = req.query.namesearch ||""; 
-        const descriptionsearch = req.query.descriptionsearch ||""; 
-        const pricesearch=req.query.pricesearch||""; 
+
+try {    
+const search = req.query.search ||""; 
+
+const namesearch = req.query.namesearch ||""; 
+const descriptionsearch = req.query.descriptionsearch ||""; 
+const pricesearch=req.query.pricesearch||""; 
 
 
 
 
-        const count = await Product.countDocuments({
-          $and: [
-            {
-              $and: [
-                { name: { $regex: namesearch, $options: 'i' } },
-                { price: { $regex: pricesearch, $options: 'i' } },
-                { description: { $regex: descriptionsearch, $options: 'i' } }
-              ]
-            },
-            {
-              $or: [
-                { name: { $regex: search, $options: 'i' } },
-                { price: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } }
-              ]
-            }
-          ]
-        }
-        );
+const count = await Product.countDocuments({
+$and: [
+  {
+    $and: [
+      { name: { $regex: namesearch, $options: 'i' } },
+      { price: { $regex: pricesearch, $options: 'i' } },
+      { description: { $regex: descriptionsearch, $options: 'i' } }
+    ]
+  },
+  {
+    $or: [
+      { name: { $regex: search, $options: 'i' } },
+      { price: { $regex: search, $options: 'i' } },
+      { description: { $regex: search, $options: 'i' } }
+    ]
+  }
+]
+}
+);
 
 
 
-        const page = parseInt(req.query.page) || 1; // Get the requested page number from the query parameter
-        const limit =  parseInt(req.query.limit) || 10; // Set the number of items per page
-        const skip = (page - 1) * limit; // Calculate the number of items to skip
-        const sort = req.query.sort||'createdAt'; 
-        const totalPages = Math.ceil(count / limit);
+const page = parseInt(req.query.page) || 1; // Get the requested page number from the query parameter
+const limit =  parseInt(req.query.limit) || 10; // Set the number of items per page
+const skip = (page - 1) * limit; // Calculate the number of items to skip
+const sort = req.query.sort||'createdAt'; 
+const totalPages = Math.ceil(count / limit);
 
 
-      const products = await Product.find({
-        $and: [
-          {
-            $and: [
-              { name: { $regex: namesearch, $options: 'i' } },
-              { price: { $regex: pricesearch, $options: 'i' } },
-              { description: { $regex: descriptionsearch, $options: 'i' } }
-            ]
-          },
-          {
-            $or: [
-              { name: { $regex: search, $options: 'i' } },
-              { price: { $regex: search, $options: 'i' } },
-              { description: { $regex: search, $options: 'i' } }
-            ]
-          }
-        ]
-      })
-      .skip(skip)
-      .limit(limit)
-      .sort(sort);
+const products = await Product.find({
+$and: [
+{
+  $and: [
+    { name: { $regex: namesearch, $options: 'i' } },
+    { price: { $regex: pricesearch, $options: 'i' } },
+    { description: { $regex: descriptionsearch, $options: 'i' } }
+  ]
+},
+{
+  $or: [
+    { name: { $regex: search, $options: 'i' } },
+    { price: { $regex: search, $options: 'i' } },
+    { description: { $regex: search, $options: 'i' } }
+  ]
+}
+]
+})
+.skip(skip)
+.limit(limit)
+.sort(sort);
 
-        return res.status(200).json({ success: true, message: 'Products Successfully',products,totalPages,
-        currentPage: page,
-        limit: limit,
-        totalRow: count});
+return res.status(200).json({ success: true, message: 'Products Successfully',products,totalPages,
+currentPage: page,
+limit: limit,
+totalRow: count});
 
-        }catch (error) {
+}catch (error) {
 
-        return res.status(400).json({ success: false,  message: 'Validation Error',error });
-        }
-        }
+return res.status(400).json({ success: false,  message: 'Validation Error',error });
+}
+}
   
 const store = async(req,res,next)=>{
   const { name, price, description} = req.body;
   const images = req.files && req.files.images; 
   const imageUpload=[];
     try { 
-   
-    if (!req.files || Object.keys(req.files).length === 0) {
-      return res.status(400).json({ success: true, message: 'No files were uploaded'});
-   
-    }
+  
 
     if (!fs.existsSync("public/products/")) {
     fs.mkdirSync("public/products/", { recursive: true });
     }
 
-
+if(images){
     if (Array.isArray(images)) {
       images.forEach((image) => {
       const imageName="products/"+Date.now()+ '-' +image.name;
@@ -117,6 +113,7 @@ const store = async(req,res,next)=>{
   
       });
       }
+    }
    
 
     const product = new Product({
@@ -147,37 +144,37 @@ const store = async(req,res,next)=>{
     }catch (err) {
     
     
-    let error={};
+      let error={};
 
-    if (typeof err === 'object' && err instanceof Error) {
-    if(err.code === 11000){
-
-    error={"name":"Product Name is already taken"};
-    if (Array.isArray(imageUpload)) {
-      imageUpload.forEach((image) => {
-      
-      if (fs.existsSync(`public/`+image)) {
-       
-      fs.unlinkSync(`public/`+image);
-
-      }
+      if (typeof err === 'object' && err instanceof Error) {
+      if(err.code === 11000){
+  
+      error={"name":"Product Name is already taken"};
+      if (Array.isArray(imageUpload)) {
+        imageUpload.forEach((image) => {
+        
+        if (fs.existsSync(`public/`+image)) {
+         
+        fs.unlinkSync(`public/`+image);
+  
+        }
+        });
+        }
+  
+      }else{
+        
+      Object.keys(err.errors).forEach((key) => {
+      error[key] = err.errors[key].message;
       });
       }
-
-    }else{
-    Object.keys(err.errors).forEach((key) => {
-    error[key] = err.errors[key].message;
-    });
-    }
-    }else{
-    error=err;
-    }
-
+      }else{
+      error=err;
+      }
+  
+      return res
+      .status(400)
+      .json({ success: false, message: "Validation Error", error  });
    
-
-    return res
-    .status(400)
-    .json({ success: false, message: "Validation Error", error  });
     
     }
 }

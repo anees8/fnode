@@ -22,7 +22,7 @@ const productSchema = new mongoose.Schema({
       required: [true, 'Image must be required'],
     },
   ],
-});
+},{timestamps:true});
 
 const Product = mongoose.model('Product', productSchema);
 
