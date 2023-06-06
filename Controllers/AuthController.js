@@ -149,10 +149,13 @@ const ResetPassword = async (req, res, next) => {
         password,
         token: ""
       };
-      const data = await User.findByIdAndUpdate(user._id, { $set: updateData });
+      const data = await User.findByIdAndUpdate(user._id, { $set: updateData },{
+        new: true,
+        runValidators: true
+        });
       return res
         .status(200)
-        .json({ success: true, message: "Password Updated Successfully  " });
+        .json({ success: true, message: "Password Updated Successfully  ",data });
     } else {
       return res
         .status(400)
@@ -190,16 +193,15 @@ const usersprofile = async (req, res, next) => {
         }
         }
 
-        await UserProfile.findOneAndUpdate(
+        userProfile= await UserProfile.findOneAndUpdate(
         {'user_id':_id},
-        { $set: { phone, profileImage: filename } }
+        { $set: { phone, profileImage: filename } },{
+          new: true,
+          runValidators: true
+          }
         );
 
 
-        userProfile = await UserProfile.findOne({'user_id':_id}).populate("user_id", [
-        "name",
-        "email"
-        ]);
 
 
         } else {
@@ -224,7 +226,10 @@ const usersprofile = async (req, res, next) => {
         });
         }
 
-        const user = await User.findByIdAndUpdate(_id,{$set:{"profile":userProfile._id}});
+      const user = await User.findByIdAndUpdate(_id,{$set:{"profile":userProfile._id}},{
+      new: true,
+      runValidators: true
+      });
 
         return res
         .status(200)
@@ -345,7 +350,10 @@ const updateuser = async(req,res,next)=>{
     let updateData ={
     name:req.body.name
     }; 
-    const user = await User.findByIdAndUpdate(userId,{$set:updateData});
+    const user = await User.findByIdAndUpdate(userId,{$set:updateData},{
+      new: true,
+      runValidators: true
+      });
 
   return res.json({ success: true, message: 'User Updated Successfully',user});
 

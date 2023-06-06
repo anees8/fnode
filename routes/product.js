@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const authenticateJWT  = require('../middleware/auth');
 const permission = require('../middleware/permission');
-
 const ProductController = require('../Controllers/ProductController')
 
 

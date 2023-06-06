@@ -5,6 +5,8 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Product Name must be required'],
     unique:  [true, 'Product Name Already Exists'],
+    minLength: [2, "Product Name should have minimum 2 letter"],
+    maxLength: [15, "Product Name should have maximum 15 letter"],
   },
   price: {
     type: String,

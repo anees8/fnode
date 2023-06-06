@@ -58,10 +58,13 @@ const update = async (req,res,next)=>{
     phone:req.body.phone,
     age:req.body.age,
     }; 
-    const data = await Employee.findByIdAndUpdate(employeeID,{$set:updateData});
+    const data = await Employee.findByIdAndUpdate(employeeID,{$set:updateData},{
+    new: true,
+    runValidators: true
+    });
     return  res.status(200).json({ success : true , data  })
     } catch (error) {
-        return  res.status(400).json({ success : false , error })
+    return  res.status(400).json({ success : false , error })
     }
 
 }

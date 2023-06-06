@@ -3,7 +3,7 @@ const fs = require("fs");
 
 const index = async(req,res,next)=>{
 
-
+      
         try {    
         const search = req.query.search ||""; 
        
@@ -77,10 +77,11 @@ const index = async(req,res,next)=>{
         }
   
 const store = async(req,res,next)=>{
+  const { name, price, description} = req.body;
+  const images = req.files && req.files.images; 
+  const imageUpload=[];
     try { 
-    const { name, price, description} = req.body;
-    const images = req.files && req.files.images; 
-    const imageUpload=[];
+   
     if (!req.files || Object.keys(req.files).length === 0) {
       return res.status(400).json({ success: true, message: 'No files were uploaded'});
    
@@ -90,31 +91,33 @@ const store = async(req,res,next)=>{
     fs.mkdirSync("public/products/", { recursive: true });
     }
 
+
     if (Array.isArray(images)) {
-    images.forEach((image) => {
-    const imageName="products/"+Date.now()+ '-' +image.name;
-    image.mv(`public/`+imageName, (err) => {
-    if (err) {
-    return res.status(500).send(err);
-    }
-    });
-    imageUpload.push(imageName);
-    });
-    }else {
-
-   const imageName="products/"+Date.now()+ '-' +images.name;
-    imageUpload.push(imageName);
-
-    images.mv(`public/`+imageName, (err) => {
-
-
-    if (err) {
-    return res.status(500).send(err);
-    }
-
-
-    });
-    }
+      images.forEach((image) => {
+      const imageName="products/"+Date.now()+ '-' +image.name;
+      image.mv(`public/`+imageName, (err) => {
+      if (err) {
+      return res.status(500).send(err);
+      }
+      });
+      imageUpload.push(imageName);
+      });
+      }else {
+  
+     const imageName="products/"+Date.now()+ '-' +images.name;
+      imageUpload.push(imageName);
+  
+      images.mv(`public/`+imageName, (err) => {
+  
+  
+      if (err) {
+      return res.status(500).send(err);
+      }
+  
+  
+      });
+      }
+   
 
     const product = new Product({
     name,
@@ -122,12 +125,27 @@ const store = async(req,res,next)=>{
     description,
     images:imageUpload
     });
-
+  
     const data = await product.save();
 
+    if(data){
     return res.status(200).json({ success: true, message: 'Products Added Successfully',data});
+    }else{
+     
+      if (Array.isArray(imageUpload)) {
+      imageUpload.forEach((image) => {
+      if (fs.existsSync(`public/`+image)) {
+      fs.unlinkSync(`public/`+image);
+
+      }
+      });
+      }
+
+    }
+
 
     }catch (err) {
+    
     
     let error={};
 
@@ -135,6 +153,17 @@ const store = async(req,res,next)=>{
     if(err.code === 11000){
 
     error={"name":"Product Name is already taken"};
+    if (Array.isArray(imageUpload)) {
+      imageUpload.forEach((image) => {
+      
+      if (fs.existsSync(`public/`+image)) {
+       
+      fs.unlinkSync(`public/`+image);
+
+      }
+      });
+      }
+
     }else{
     Object.keys(err.errors).forEach((key) => {
     error[key] = err.errors[key].message;
@@ -143,6 +172,8 @@ const store = async(req,res,next)=>{
     }else{
     error=err;
     }
+
+   
 
     return res
     .status(400)
@@ -155,21 +186,21 @@ const update = async(req,res,next)=>{
     const { name, price, description} = req.body;
     const images = req.files && req.files.images; 
     const imageUpload=[];
-
+  
   try {    
-    let productID = req.params.productID;
-    let updateData ={
-    name,
-    price, 
-    description
-    }; 
+      let productID = req.params.productID;
+      let updateData ={
+      name,
+      price, 
+      description
+      }; 
 
         if(images){
         const imageexists = await Product.findById(productID);
         if (Array.isArray(imageexists.images)) {
         imageexists.images.forEach((image) => {
-          if (fs.existsSync(image)) {
-          fs.unlinkSync(image);
+          if (fs.existsSync(`public/`+image)) {
+          fs.unlinkSync(`public/`+image);
 
           }
         });
@@ -209,8 +240,11 @@ const update = async(req,res,next)=>{
 
     
         
-      await Product.findByIdAndUpdate(productID,{$set:updateData});
-      const data = await Product.findById(productID);
+          const data =  await Product.findByIdAndUpdate(productID,{$set:updateData},{
+          new: true,
+          runValidators: true
+          });
+
     if(!data){
     return   res.status(404).json({ success:false , error : 'Product Id Invalid'});
     }
@@ -226,6 +260,17 @@ const update = async(req,res,next)=>{
     if(err.code === 11000){
 
     error={"name":"Product Name is already taken"};
+    if (Array.isArray(imageUpload)) {
+      imageUpload.forEach((image) => {
+      
+      if (fs.existsSync(`public/`+image)) {
+       
+      fs.unlinkSync(`public/`+image);
+
+      }
+      });
+      }
+
     }else{
     Object.keys(err.errors).forEach((key) => {
     error[key] = err.errors[key].message;
@@ -264,8 +309,8 @@ const destroy = async(req,res,next)=>{
       const data = await Product.findOneAndRemove(productID);
       if (Array.isArray(data.images)) {
       data.images.forEach((image) => {
-      if (fs.existsSync(image)) {
-      fs.unlinkSync(image);
+      if (fs.existsSync(`public/`+image)) {
+      fs.unlinkSync(`public/`+image);
       }
       });
       }
