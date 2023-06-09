@@ -19,7 +19,7 @@ app.use(express.static('public'));
 const AuthRoute = require('./routes/auth');
 const EmployeeRoute = require('./routes/employee');
 const ProductRoute = require('./routes/product');
-
+const ImapRoute = require('./routes/imap');
 
 
 
@@ -44,12 +44,17 @@ if(app.get('env')=="development"){
 
 
 app.use('/api',AuthRoute);
+app.use('/api',ImapRoute);
 app.use('/api',EmployeeRoute);
 app.use('/api',ProductRoute);
+
 
 
 // Start the server and listen on a specific port
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
+});
+app.use((req,res,next)=>{
+   res.status(400).json({ success: false, message:"Invalid URL Request" });
 });
