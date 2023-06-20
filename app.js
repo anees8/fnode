@@ -25,7 +25,7 @@ const EmployeeRoute = require('./routes/employee');
 const ProductRoute = require('./routes/product');
 const ImapRoute = require('./routes/imap');
 
- const accessLogStream=fs.createWriteStream(path.join(__dirname,'access.log'),{flags:'a'}); 
+const accessLogStream=fs.createWriteStream(path.join(__dirname,'access.log'),{flags:'a'}); 
 
 mongoose.connect( `mongodb+srv://meeranjianees1:Anees%4084@anees.r0egejs.mongodb.net/${process.env.DB_NAME}`);
 const db=mongoose.connection;
