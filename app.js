@@ -8,7 +8,7 @@ const cors = require('cors');
 const helmet=require('helmet');
 require('dotenv').config();
 const app = express();
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors({ origin: 'http://192.168.5.17:5173' }));
 app.use(helmet());
 
 const port = process.env.PORT || 3000; // You can use any valid port number here

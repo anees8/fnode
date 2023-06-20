@@ -4,7 +4,7 @@ const Imap = require('node-imap');
 const index = async(req,res,next)=>{
     let {limit,page}=req.query; 
     const imap = new Imap({
-    user: 'meeranjianees1@gmail.com',
+    user: 'meeranjianees1@gmails.com',
     password:'ncfpymmugcmtfdkc',
     host: 'imap.gmail.com',
     port: 993,

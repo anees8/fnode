@@ -5,6 +5,7 @@ const fs = require("fs");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const { body, validationResult } = require('express-validator');
 
 
 
@@ -51,6 +52,31 @@ const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
+      await body('email')
+      .notEmpty().withMessage('Email is required')
+      .isEmail().withMessage('Invalid email format')
+      .run(req);
+
+      await body('password')
+      .notEmpty().withMessage('Password is required')
+      .run(req);
+
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      const errorMessages = {};
+      errors.array().forEach(error => {
+        if (!errorMessages[error.path]) {
+          errorMessages[error.path] = error.msg;
+        }
+       
+      });
+      return res.status(400).json({
+        success: false,
+        message: 'Validation Error',
+        error: errorMessages
+      });
+    }
+
     const user = await User.findOne({ email });
    
     if (user) {
@@ -69,12 +95,12 @@ const login = async (req, res, next) => {
       } else {
         return res
           .status(400)
-          .json({ success: false, error: "Invalid email or password" });
+          .json({ success: false, error:{ email: "Invalid email or password" ,password: "Invalid email or password" } });
       }
     } else {
       return res
         .status(400)
-        .json({ success: false, error: "Invalid email or password" });
+        .json({ success: false, error: { email: "Invalid email or password",password: "Invalid email or password"  }});
     }
   } catch (error) {
     return res.status(400).json({ success: false, error });
