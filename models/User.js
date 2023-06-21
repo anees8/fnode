@@ -6,11 +6,13 @@ const userSchema= new Schema({
 
     name:{
         type:String ,
+        trim: true, 
         required: [true, 'Name must be required'],
 
     },    
     email:{
         type: String,
+        trim: true, 
         required:  [true, 'Email must be required'],
         lowercase: true,
         unique:  [true, 'Email Address Already Exists'],
@@ -20,14 +22,17 @@ const userSchema= new Schema({
           ]
     },
     role: {
+        trim: true, 
         type: String,
         default: 'user',
       },
     token:{
+        trim: true, 
         type:String,
     },    
     phone:{
         type:String,
+        trim: true, 
         required:  [true, 'Phone must be required'],
         minLength: [10, "no should have minimum 10 digits"],
         maxLength: [10, "no should have maximum 10 digits"],
@@ -35,6 +40,7 @@ const userSchema= new Schema({
     },  
     password:{
         type:String,
+        trim: true, 
         required:  [true, 'Password must be required'],
         minLength: [6, "no should have minimum 6 digits"],
         

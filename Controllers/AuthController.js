@@ -52,12 +52,12 @@ const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-      await body('email')
+      await body('email').trim()
       .notEmpty().withMessage('Email is required')
       .isEmail().withMessage('Invalid email format')
       .run(req);
 
-      await body('password')
+      await body('password').trim() 
       .notEmpty().withMessage('Password is required')
       .run(req);
 
@@ -95,12 +95,12 @@ const login = async (req, res, next) => {
       } else {
         return res
           .status(400)
-          .json({ success: false, error:{ email: "Invalid email or password" ,password: "Invalid email or password" } });
+          .json({ success: false, error:{error: "That was an invalid email or password. Try again!" } });
       }
     } else {
       return res
         .status(400)
-        .json({ success: false, error: { email: "Invalid email or password",password: "Invalid email or password"  }});
+        .json({ success: false, error: {error: "That was an invalid email or password. Try again!" }});
     }
   } catch (error) {
     return res.status(400).json({ success: false, error });
