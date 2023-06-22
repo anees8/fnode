@@ -80,6 +80,7 @@ const store = async(req,res,next)=>{
   const { name, price, description} = req.body;
   const images = req.files && req.files.images; 
   const imageUpload=[];
+
     try { 
   
 
@@ -183,7 +184,8 @@ const update = async(req,res,next)=>{
     const { name, price, description} = req.body;
     const images = req.files && req.files.images; 
     const imageUpload=[];
-  
+
+ 
   try {    
       let productID = req.params.productID;
       let updateData ={
@@ -303,7 +305,7 @@ const destroy = async(req,res,next)=>{
 
       try {    
       let productID = req.params.productID;
-      const data = await Product.findOneAndRemove(productID);
+      const data = await Product.findByIdAndDelete(productID);
       if (Array.isArray(data.images)) {
       data.images.forEach((image) => {
       if (fs.existsSync(`public/`+image)) {
