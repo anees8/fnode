@@ -286,29 +286,7 @@ const getusers = async(req,res,next)=>{
             const emailsearch = req.query.emailsearch ||""; 
             const rolesearch = req.query.rolesearch ||""; 
 
-            const count = await User.countDocuments({
-             
-                  $and: [
-                    { name: { $regex: namesearch, $options: 'i' } },
-                    { email: { $regex: emailsearch, $options: 'i' } },
-                    { role: { $regex: rolesearch, $options: 'i' } }
-                  ]
-                },
-                {
-                  $or: [
-                    { name: { $regex: search, $options: 'i' } },
-                    { email: { $regex: search, $options: 'i' } },
-                    { role: { $regex: search, $options: 'i' } }
-                  ]
-              
-            });
-            const page = parseInt(req.query.page) || 1; // Get the requested page number from the query parameter
-            const limit =  parseInt(req.query.limit) || 10; // Set the number of items per page
-            const skip = (page - 1) * limit; // Calculate the number of items to skip
-            const totalPages = Math.ceil(count / limit);
-            const sort = req.query.sort||'createdAt'; 
-       
-            const users = await User.find({
+            const usersQuery = {
               $and: [
                 {
                   $and: [
@@ -325,17 +303,26 @@ const getusers = async(req,res,next)=>{
                   ]
                 }
               ]
-            }).skip(skip).limit(limit).sort(sort).populate('profile',[
+              };
+              
+            const count = await User.countDocuments(usersQuery);
+            const page = parseInt(req.query.page) || 1; // Get the requested page number from the query parameter
+            const limit =  parseInt(req.query.limit); // Set the number of items per page
+            const skip = (page - 1) * limit; // Calculate the number of items to skip
+          
+            const sort = req.query.sort||'createdAt'; 
+    
+            const users = await User.find(usersQuery).skip(skip).limit(limit).sort(sort).populate('profile',[
               "profileImage", 
               "phone"
             ]);
 
+            const totalPages = Math.ceil(count / limit)||users.length;
 
-            
 
             return res.json({ success: true, message: 'Users Return Successfully',users,totalPages,
             currentPage: page,
-            limit: limit,
+            limit: limit||-1,
             totalRow: count});
 
       }catch (error) {
