@@ -9,7 +9,7 @@ const productSchema = new mongoose.Schema({
     maxLength: [15, "Product Name should have maximum 15 letter"],
   },
   price: {
-    type: String,
+    type: Number,
     required: [true, 'Price must be required'],
   },
   description: {

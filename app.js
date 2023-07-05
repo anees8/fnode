@@ -19,7 +19,7 @@ app.use(helmet({
   crossOriginResourcePolicy: false,
 }));
 
-const port = process.env.PORT || 3000; // You can use any valid port number here
+
 
 app.use(express.urlencoded({
   extended: true
@@ -57,10 +57,13 @@ app.use('/api',ProductRoute);
 
 
 // Start the server and listen on a specific port
+const port = process.env.PORT || 3000; // You can use any valid port number here
+const host = '192.168.5.17'; // Replace with your desired host
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+app.listen(port, host, () => {
+  console.log(`Server running at http://${host}:${port}/`);
 });
+
 app.use((req,res,next)=>{
    res.status(400).json({ success: false, message:"Invalid URL Request" });
 });

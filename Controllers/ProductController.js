@@ -13,15 +13,14 @@ const index = async (req, res, next) => {
         {
           $and: [
             { name: { $regex: namesearch, $options: "i" } },
-            { price: { $regex: pricesearch, $options: "i" } },
             { description: { $regex: descriptionsearch, $options: "i" } }
           ]
         },
         {
           $or: [
             { name: { $regex: search, $options: "i" } },
-            { price: { $regex: search, $options: "i" } },
-            { description: { $regex: search, $options: "i" } }
+            { description: { $regex: search, $options: "i" } },
+            { price: parseFloat(pricesearch ? pricesearch : search) || 0 }
           ]
         }
       ]
@@ -33,27 +32,21 @@ const index = async (req, res, next) => {
     const skip = (page - 1) * limit; // Calculate the number of items to skip
     const sort = req.query.sort || "createdAt";
     const products = await Product.find(productQuery)
-    .skip(skip)
-    .limit(limit)
-    .sort(sort);
+      .skip(skip)
+      .limit(limit)
+      .sort(sort);
 
+    const totalPages = Math.ceil(count / limit) || products.length;
 
-    const totalPages = Math.ceil(count / limit)||products.length;
-  
-
-   
-
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Products Successfully",
-        products,
-        totalPages,
-        currentPage: page,
-        limit: limit||-1,
-        totalRow: count
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Products Successfully",
+      products,
+      totalPages,
+      currentPage: page,
+      limit: limit || -1,
+      totalRow: count
+    });
   } catch (error) {
     return res
       .status(400)
@@ -65,6 +58,8 @@ const store = async (req, res, next) => {
   const { name, price, description } = req.body;
   const images = req.files && req.files.images;
   const imageUpload = [];
+  const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg"];
+  const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
 
   try {
     if (!fs.existsSync("public/products/")) {
@@ -74,6 +69,24 @@ const store = async (req, res, next) => {
     if (images) {
       if (Array.isArray(images)) {
         images.forEach((image) => {
+          if (!ALLOWED_IMAGE_TYPES.includes(image.mimetype)) {
+            return res
+              .status(400)
+              .json({
+                success: false,
+                message: "Validation Error",
+                error: { images: "Only PNG and JPEG images are allowed." }
+              });
+          }
+          if (images.size > MAX_IMAGE_SIZE) {
+            return res
+              .status(400)
+              .json({
+                success: false,
+                message: "Validation Error",
+                error: { images: "Image size exceeds the limit of 2MB." }
+              });
+          }
           const imageName = "products/" + Date.now() + "-" + image.name;
           image.mv(`public/` + imageName, (err) => {
             if (err) {
@@ -83,6 +96,25 @@ const store = async (req, res, next) => {
           imageUpload.push(imageName);
         });
       } else {
+        if (!ALLOWED_IMAGE_TYPES.includes(images.mimetype)) {
+          return res
+            .status(400)
+            .json({
+              success: false,
+              message: "Validation Error",
+              error: { images: "Only PNG and JPEG images are allowed." }
+            });
+        }
+        if (images.size > MAX_IMAGE_SIZE) {
+          return res
+            .status(400)
+            .json({
+              success: false,
+              message: "Validation Error",
+              error: { images: "Image size exceeds the limit of 2MB." }
+            });
+        }
+
         const imageName = "products/" + Date.now() + "-" + images.name;
         imageUpload.push(imageName);
 
@@ -144,10 +176,12 @@ const store = async (req, res, next) => {
   }
 };
 
-const update = async (req, res, next) => {
+const update = async (req, res, next) => {  
   const { name, price, description } = req.body;
   const images = req.files && req.files.images;
   const imageUpload = [];
+  const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg"];
+  const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
 
   try {
     let productID = req.params.productID;
@@ -168,6 +202,24 @@ const update = async (req, res, next) => {
       }
       if (Array.isArray(images)) {
         images.forEach((image) => {
+          if (!ALLOWED_IMAGE_TYPES.includes(image.mimetype)) {
+            return res
+              .status(400)
+              .json({
+                success: false,
+                message: "Validation Error",
+                error: { images: "Only PNG and JPEG images are allowed." }
+              });
+          }
+          if (image.size > MAX_IMAGE_SIZE) {
+            return res
+              .status(400)
+              .json({
+                success: false,
+                message: "Validation Error",
+                error: { images: "Image size exceeds the limit of 2MB." }
+              });
+          }
           const imageName = "products/" + Date.now() + "-" + image.name;
           image.mv(`public/` + imageName, (err) => {
             if (err) {
@@ -177,6 +229,24 @@ const update = async (req, res, next) => {
           imageUpload.push(imageName);
         });
       } else {
+        if (!ALLOWED_IMAGE_TYPES.includes(images.mimetype)) {
+          return res
+            .status(400)
+            .json({
+              success: false,
+              message: "Validation Error",
+              error: { images: "Only PNG and JPEG images are allowed." }
+            });
+        }
+        if (images.size > MAX_IMAGE_SIZE) {
+          return res
+            .status(400)
+            .json({
+              success: false,
+              message: "Validation Error",
+              error: { images: "Image size exceeds the limit of 2MB." }
+            });
+        }
         const imageName = "products/" + Date.now() + "-" + images.name;
         imageUpload.push(imageName);
 
