@@ -32,6 +32,8 @@ const AuthRoute = require('./routes/auth');
 const EmployeeRoute = require('./routes/employee');
 const ProductRoute = require('./routes/product');
 const ImapRoute = require('./routes/imap');
+const CategoryRoute=require('./routes/category');
+
 
 const accessLogStream=fs.createWriteStream(path.join(__dirname,'access.log'),{flags:'a'}); 
 
@@ -53,6 +55,7 @@ console.log('Database Connection Established!')
 app.use('/api',AuthRoute);
 app.use('/api',ImapRoute);
 app.use('/api',EmployeeRoute);
+app.use('/api',CategoryRoute);
 app.use('/api',ProductRoute);
 
 
