@@ -1,5 +1,5 @@
 const Category = require("../models/Category");
-
+const fs = require("fs");   
 
 const index = async (req, res, next) => {
     try {
@@ -54,23 +54,294 @@ const index = async (req, res, next) => {
 };
 
 const store = async (req, res, next) => {
-    return res.status(400).json({ success :true  })
+  const { name, description } = req.body;
+  const images = req.files && req.files.images;
+  const imageUpload = [];
+  const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg"];
+  const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
 
+  try {
+    if (!fs.existsSync("public/categories/")) {
+      fs.mkdirSync("public/categories/", { recursive: true });
+    }
+
+    if (images) {
+      if (Array.isArray(images)) {
+        images.forEach((image) => {
+          if (!ALLOWED_IMAGE_TYPES.includes(image.mimetype)) {
+            return res
+              .status(400)
+              .json({
+                success: false,
+                message: "Validation Error",
+                error: { images: "Only PNG and JPEG images are allowed." }
+              });
+          }
+          if (images.size > MAX_IMAGE_SIZE) {
+            return res
+              .status(400)
+              .json({
+                success: false,
+                message: "Validation Error",
+                error: { images: "Image size exceeds the limit of 2MB." }
+              });
+          }
+          const imageName = "categories/" + Date.now() + "-" + image.name;
+          image.mv(`public/` + imageName, (err) => {
+            if (err) {
+              return res.status(500).send(err);
+            }
+          });
+          imageUpload.push(imageName);
+        });
+      } else {
+        if (!ALLOWED_IMAGE_TYPES.includes(images.mimetype)) {
+          return res
+            .status(400)
+            .json({
+              success: false,
+              message: "Validation Error",
+              error: { images: "Only PNG and JPEG images are allowed." }
+            });
+        }
+        if (images.size > MAX_IMAGE_SIZE) {
+          return res
+            .status(400)
+            .json({
+              success: false,
+              message: "Validation Error",
+              error: { images: "Image size exceeds the limit of 2MB." }
+            });
+        }
+
+        const imageName = "categories/" + Date.now() + "-" + images.name;
+        imageUpload.push(imageName);
+
+        images.mv(`public/` + imageName, (err) => {
+          if (err) {
+            return res.status(500).send(err);
+          }
+        });
+      }
+    }
+
+    const category = new Category({
+      name,
+      description,
+      images: imageUpload
+    });
+
+    const data = await category.save();
+
+    if (data) {
+      return res
+        .status(200)
+        .json({ success: true, message: "Category Added Successfully", data });
+    } else {
+      if (Array.isArray(imageUpload)) {
+        imageUpload.forEach((image) => {
+          if (fs.existsSync(`public/` + image)) {
+            fs.unlinkSync(`public/` + image);
+          }
+        });
+      }
+    }
+  } catch (err) {
+    
+    
+    let error = {};
+
+    if (typeof err === "object" && err instanceof Error) {
+      if (err.code === 11000) {
+        error = { name: "Category Name is already taken" };
+        if (Array.isArray(imageUpload)) {
+          imageUpload.forEach((image) => {
+            if (fs.existsSync(`public/` + image)) {
+              fs.unlinkSync(`public/` + image);
+            }
+          });
+        }
+      } else {
+        Object.keys(err.errors).forEach((key) => {
+          error[key] = err.errors[key].message;
+        });
+      }
+    } else {
+      error = err;
+    }
+
+    return res
+      .status(400)
+      .json({ success: false, message: "Validation Error", error });
+  }
 };
 
 const update = async (req, res, next) => {  
-    return res.status(400).json({ success :true  })
+  const { name,description } = req.body;
+  const images = req.files && req.files.images;
+  const imageUpload = [];
+  const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg"];
+  const MAX_IMAGE_SIZE = 2 * 1024 * 1024; // 2MB
+
+  try {
+    let categoryID = req.params.categoryID;
+    let updateData = {
+      name,
+      description
+    };
+
+    if (images) {
+      const imageexists = await Category.findById(categoryID);
+      if (Array.isArray(imageexists.images)) {
+        imageexists.images.forEach((image) => {
+          if (fs.existsSync(`public/` + image)) {
+            fs.unlinkSync(`public/` + image);
+          }
+        });
+      }
+      if (Array.isArray(images)) {
+        images.forEach((image) => {
+          if (!ALLOWED_IMAGE_TYPES.includes(image.mimetype)) {
+            return res
+              .status(400)
+              .json({
+                success: false,
+                message: "Validation Error",
+                error: { images: "Only PNG and JPEG images are allowed." }
+              });
+          }
+          if (image.size > MAX_IMAGE_SIZE) {
+            return res
+              .status(400)
+              .json({
+                success: false,
+                message: "Validation Error",
+                error: { images: "Image size exceeds the limit of 2MB." }
+              });
+          }
+          const imageName = "categories/" + Date.now() + "-" + image.name;
+          image.mv(`public/` + imageName, (err) => {
+            if (err) {
+              return res.status(500).send(err);
+            }
+          });
+          imageUpload.push(imageName);
+        });
+      } else {
+        if (!ALLOWED_IMAGE_TYPES.includes(images.mimetype)) {
+          return res
+            .status(400)
+            .json({
+              success: false,
+              message: "Validation Error",
+              error: { images: "Only PNG and JPEG images are allowed." }
+            });
+        }
+        if (images.size > MAX_IMAGE_SIZE) {
+          return res
+            .status(400)
+            .json({
+              success: false,
+              message: "Validation Error",
+              error: { images: "Image size exceeds the limit of 2MB." }
+            });
+        }
+        const imageName = "categories/" + Date.now() + "-" + images.name;
+        imageUpload.push(imageName);
+
+        images.mv(`public/` + imageName, (err) => {
+          if (err) {
+            return res.status(500).send(err);
+          }
+        });
+      }
+
+      updateData.images = imageUpload;
+    }
+
+    const data = await Category.findByIdAndUpdate(
+      categoryID,
+      { $set: updateData },
+      {
+        new: true,
+        runValidators: true
+      }
+    );
+
+    if (!data) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Category Id Invalid" });
+    }
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Categories Updated Successfully", data });
+  } catch (err) {
+    let error = {};
+
+    if (typeof err === "object" && err instanceof Error) {
+      if (err.code === 11000) {
+        error = { name: "Category Name is already taken" };
+        if (Array.isArray(imageUpload)) {
+          imageUpload.forEach((image) => {
+            if (fs.existsSync(`public/` + image)) {
+              fs.unlinkSync(`public/` + image);
+            }
+          });
+        }
+      } else {
+        Object.keys(err.errors).forEach((key) => {
+          error[key] = err.errors[key].message;
+        });
+      }
+    } else {
+      error = err;
+    }
+
+    return res
+      .status(400)
+      .json({ success: false, message: "Validation Error", error });
+  }
 };
 
-//Get Single  Categorys
+//Get Single  Category
 const show = async (req, res, next) => {
-    return res.status(400).json({ success :true  })
-
+  let categoryID = req.params.categoryID;
+  try {
+    const category = await Category.findById(categoryID);
+    if (!category) {
+      return res
+        .status(404)
+        .json({ success: false, error: "Catgory Id Invalid" });
+    }
+    return res.status(200).json({ success: true, category });
+  } catch (error) {
+    return res.status(400).json({ success: false, error });
+  }
 };
 
-// Delete  an  Categorys
+// Delete  an  Category
 const destroy = async (req, res, next) => {
-    return res.status(400).json({ success :true  })
+  try {
+    let categoryID = req.params.categoryID;
+    const data = await Category.findByIdAndDelete(categoryID);
+    if (Array.isArray(data.images)) {
+      data.images.forEach((image) => {
+        if (fs.existsSync(`public/` + image)) {
+          fs.unlinkSync(`public/` + image);
+        }
+      });
+    }
+    if (data) {
+      return res.status(201).json({ success: true, data });
+    }
+    return res
+      .status(404)
+      .json({ success: false, error: "Category Id Invalid" });
+  } catch (error) {
+    return res.status(400).json({ success: false, error });
+  }
 };
 
 module.exports = { index, show, store, update, destroy };

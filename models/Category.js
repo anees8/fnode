@@ -13,10 +13,12 @@ const categorySchema = new mongoose.Schema({
     type: String,
     required: [true, 'Description must be required'],
     },
-    images:{
-    type: String,
-    required: [true, 'Image must be required'],
+   images: [
+    {
+      type: String,
+      required: [true, 'Image must be required'],
     },
+  ],
     status: {
     type: Number,
     required: [true, 'Status must be required'],
