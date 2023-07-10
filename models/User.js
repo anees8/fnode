@@ -29,6 +29,7 @@ const userSchema= new Schema({
     token:{
         trim: true, 
         type:String,
+        default: '',
     },    
     phone:{
         type:String,
@@ -48,11 +49,12 @@ const userSchema= new Schema({
     profile: {
     type: Schema.Types.ObjectId,
     ref: 'UserProfile',
+    default: '',
     },
-    deleted: {
+        deleted: {
         type: Boolean,
         default: false,
-      },
+        },
 },{timestamps:true});
 
 

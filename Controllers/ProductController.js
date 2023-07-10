@@ -55,7 +55,7 @@ const index = async (req, res, next) => {
 };
 
 const store = async (req, res, next) => {
-  const { name, price, description } = req.body;
+  const { name, price, description,category } = req.body;
   const images = req.files && req.files.images;
   const imageUpload = [];
   const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg"];
@@ -130,6 +130,7 @@ const store = async (req, res, next) => {
       name,
       price,
       description,
+      category,
       images: imageUpload
     });
 
@@ -177,7 +178,7 @@ const store = async (req, res, next) => {
 };
 
 const update = async (req, res, next) => {  
-  const { name, price, description } = req.body;
+  const { name, price,category,description } = req.body;
   const images = req.files && req.files.images;
   const imageUpload = [];
   const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg"];
@@ -188,6 +189,7 @@ const update = async (req, res, next) => {
     let updateData = {
       name,
       price,
+      category,
       description
     };
 

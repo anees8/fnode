@@ -9,12 +9,12 @@ const UserProfileSchema = new Schema(
         required:true
               },
     phone: { type: String ,required:true,},
-    profileImage: { type: String },
+    profileImage: { type: String ,default: ''},
     address: {
-      street: { type: String },
-      city: { type: String },
-      state: { type: String },
-      zip: { type: String }
+      street: { type: String, default: '' },
+      city: { type: String,default: '' },
+      state: { type: String ,default: ''},
+      zip: { type: String ,default: ''}
     }
   },
   { timestamps: true }

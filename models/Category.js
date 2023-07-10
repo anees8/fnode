@@ -2,27 +2,29 @@ const mongoose = require('mongoose');
 
 const categorySchema = new mongoose.Schema({
     name: {
+      trim: true,  
     type: String,
     required: [true, 'Product Name must be required'],
     unique:  [true, 'Product Name Already Exists'],
     minLength: [2, "Product Name should have minimum 2 letter"],
-    maxLength: [10, "Product Name should have maximum 10 letter"],
-    lowercase: true,
+    maxLength: [20, "Product Name should have maximum 20 letter"],
+    uppercase: true,
     },
     description: {
+      trim: true, 
     type: String,
     required: [true, 'Description must be required'],
     },
-   images: [
-    {
+   images: {  
+    trim: true, 
       type: String,
       required: [true, 'Image must be required'],
     },
-  ],
     status: {
-    type: Number,
+      
+    type: Boolean,
     required: [true, 'Status must be required'],
-    default:0,
+    default:false,
     },
 
 },{timestamps:true});
