@@ -17,10 +17,12 @@ const productSchema = new mongoose.Schema({
     required: [true, 'Description must be required'],
   },
   category: {
+    required: [true, "Category is required."],
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category',
-    required: [true, 'Category must be required'],
-    },
+    ref: "Category",
+   
+  },
+
   images: [
     {
       type: String,

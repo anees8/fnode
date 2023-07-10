@@ -8,19 +8,25 @@ const index = async (req, res, next) => {
     const namesearch = req.query.namesearch || "";
     const descriptionsearch = req.query.descriptionsearch || "";
     const pricesearch = req.query.pricesearch || "";
+    const categorysearch = "PHONES";
+   
+
     const productQuery = {
       $and: [
         {
           $and: [
             { name: { $regex: namesearch, $options: "i" } },
-            { description: { $regex: descriptionsearch, $options: "i" } }
+            { description: { $regex: descriptionsearch, $options: "i" } },
+           
           ]
         },
+       
         {
           $or: [
             { name: { $regex: search, $options: "i" } },
             { description: { $regex: search, $options: "i" } },
-            { price: parseFloat(pricesearch ? pricesearch : search) || 0 }
+            { price: parseFloat(pricesearch ? pricesearch : search) || 0 },
+      
           ]
         }
       ]
@@ -31,8 +37,10 @@ const index = async (req, res, next) => {
     const limit = parseInt(req.query.limit); // Set the number of items per page
     const skip = (page - 1) * limit; // Calculate the number of items to skip
     const sort = req.query.sort || "createdAt";
-    const products = await Product.find(productQuery)
-      .skip(skip)
+    const products = await Product.find(productQuery).populate({ 
+    path: 'category',
+    select: 'name'
+  }).skip(skip)
       .limit(limit)
       .sort(sort);
 
@@ -151,7 +159,6 @@ const store = async (req, res, next) => {
     }
   } catch (err) {
     let error = {};
-
     if (typeof err === "object" && err instanceof Error) {
       if (err.code === 11000) {
         error = { name: "Product Name is already taken" };
@@ -168,6 +175,8 @@ const store = async (req, res, next) => {
         });
       }
     } else {
+    
+      
       error = err;
     }
 
