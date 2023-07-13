@@ -127,7 +127,7 @@ const store = async (req, res, next) => {
 };
 
 const update = async (req, res, next) => {
-  const { name,description,status } = req.body;
+  const { name,description,status} = req.body;
   const images = req.files && req.files.images;
   let imageName = "";
   const ALLOWED_IMAGE_TYPES = ["image/png", "image/jpeg"];
@@ -137,7 +137,8 @@ const update = async (req, res, next) => {
     let categoryID = req.params.categoryID;
     let updateData = {
       name,
-      description,status
+      status,
+      description,
     };
 
     if (images) {

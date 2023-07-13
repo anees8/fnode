@@ -7,9 +7,7 @@ const index = async (req, res, next) => {
 
     const namesearch = req.query.namesearch || "";
     const descriptionsearch = req.query.descriptionsearch || "";
-    const pricesearch = req.query.pricesearch || "";
-    const categorysearch = "PHONES";
-   
+    const pricesearch = req.query.pricesearch || "";   
 
     const productQuery = {
       $and: [
@@ -32,6 +30,9 @@ const index = async (req, res, next) => {
       ]
     };
 
+  
+    
+
     const count = await Product.countDocuments(productQuery);
     const page = parseInt(req.query.page) || 1; // Get the requested page number from the query parameter
     const limit = parseInt(req.query.limit); // Set the number of items per page
@@ -39,10 +40,9 @@ const index = async (req, res, next) => {
     const sort = req.query.sort || "createdAt";
     const products = await Product.find(productQuery).populate({ 
     path: 'category',
-    select: 'name'
-  }).skip(skip)
+    select: 'name' }).skip(skip)
       .limit(limit)
-      .sort(sort);
+      .sort(sort).exec();
 
     const totalPages = Math.ceil(count / limit) || products.length;
 
